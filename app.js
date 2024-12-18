@@ -2,7 +2,9 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const mysql = require("mysql");
+const cors = require("cors");
 
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -46,7 +48,7 @@ app.post("/trees", (req, res) => {
     (name, height, type)
     VALUES (
         ?,?,?
-    )
+    );
     `;
   connection.query(sql, [req.body.name, req.body.height, req.body.type]);
 
@@ -85,6 +87,70 @@ app.get("/trees/:id", (req, res) => {
   });
 });
 
+// doesnt work
+///! @PUT update /:id
+// app.put("/trees/:id", (req, res) => {
+//   let sql = `
+//   update plants
+//   set name = ?, height = ?, type = ?
+//   where id = ?;`;
+
+//   connection.query(
+//     sql,
+//     [req.body.name, req.body.height, req.body.type, req.params.id],
+//     (err, result) => {
+//       const selectSQL = `select * from plants where id = ?;`;
+
+//       connection.query(selectSQL, [req.params.id], (err, updatedResult) => {
+//         res.json({
+//           message: "Record updated",
+//           updatedResult: updatedResult[0],
+//         });
+//       });
+//     }
+//   );
+// });
+// update working =>
+app.put("/trees/:id", function (req, res) {
+  let sql = `
+  UPDATE trees
+  SET name = ?, height = ?, type = ?
+  WHERE id = ?
+  `;
+  connection.query(
+    sql,
+    [req.body.name, req.body.height, req.body.type, req.params.id],
+    (err, result) => {
+      const selectSQL = `SELECT * FROM plants WHERE id = ?`;
+
+      connection.query(selectSQL, [req.params.id], (err, updatedResult) => {
+        res.json({
+          message: "Record updated",
+          updatedResult: updatedResult[0],
+        });
+      });
+    }
+  );
+});
+
+///@ DELETE /:id
+app.delete("/trees/:id", (req, res) => {
+  let sql = `
+  DELETE from trees
+  where id = ?;`;
+  connection.query(sql, [req.params.id], function (err, result) {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting data", error: err.message });
+    }
+
+    res.json({
+      message: "Record deleted",
+      result: result,
+    });
+  });
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
