@@ -53,17 +53,38 @@ app.post("/trees", (req, res) => {
   res.json({ message: "OK " });
 });
 
-///! get info
+///! get all info
 app.get("/trees", (req, res) => {
   let sql;
   sql = `
-  select * from trees`;
+  select * from trees;`;
   connection.query(sql, function (err, result) {
     if (err) throw err;
 
     res.json(result);
   });
 });
+
+///! get info on specific id
+app.get("/trees/:id", (req, res) => {
+  let sql;
+  sql = `
+  select * from trees where id = ?;`;
+
+  connection.query(sql, [req.params.id], function (err, result) {
+    if (err) {
+      console.log("Error while fetching");
+      return res
+        .status(500)
+        .json({ message: "Error while fetching", error: err.message });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+    res.json(result[0]);
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
