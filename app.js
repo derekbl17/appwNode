@@ -19,11 +19,7 @@ connection.connect(function (err) {
   console.log("Connected!");
 });
 
-// app.get("/:id", (req, res) => {
-//   res.send("Hello World!!!");
-//   console.log(req.params.id);
-// });
-
+///! unsafe method
 // @ POST
 // app.post("/trees", (req, res) => {
 //   let sql;
@@ -41,7 +37,7 @@ connection.connect(function (err) {
 
 //   res.json({ message: "OK " });
 // });
-
+///! safe
 app.post("/trees", (req, res) => {
   let sql;
 
@@ -57,6 +53,17 @@ app.post("/trees", (req, res) => {
   res.json({ message: "OK " });
 });
 
+///! get info
+app.get("/trees", (req, res) => {
+  let sql;
+  sql = `
+  select * from trees`;
+  connection.query(sql, function (err, result) {
+    if (err) throw err;
+
+    res.json(result);
+  });
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
